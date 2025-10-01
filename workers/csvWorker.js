@@ -3,28 +3,52 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv").config();
 const Sales = require("../Models/salesModel");
 
+let isConnected = false;
+
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
         console.log("Worker connected to MongoDB");
+        isConnected = true;
+    })
+    .catch(err => console.error("Worker MongoDB connection error:", err));
 
-        parentPort.on("message", msg => {
+parentPort.on("message", (msg) => {
+    if (msg === "done") {
+        parentPort.postMessage({ type: "finished" });
+        return;
+    }
 
-            console.log("WorkerId:", JSON.stringify(msg.workerId));
-            // console.log("rows:",JSON.stringify(msg.rows))
+    const { rows, workerId } = msg;
+    if (!rows || rows.length === 0) return;
 
-            if (msg === "done") {
-                parentPort.postMessage("finished");
-                return;
-            }
-            const { rows, workerId } = msg;
+    const waitForConnection = () => {
+        if (!isConnected) return setTimeout(waitForConnection, 50);
 
-            if (!rows || rows.length === 0) return;
+        Sales.insertMany(rows,{ordered:true})
+            .then(() => {
+                parentPort.postMessage({ type: "batch_done", workerId, inserted: rows.length });
+            })
+            .catch(err => {
+                console.error("Worker caught insert error:", err);
 
-            Sales.insertMany(rows, { ordered: false })
-                .then(() => console.log(`Worker ${workerId} batch inserted`))
-                .catch(err => console.error(err.message));
+                const writeErrors = (err.writeErrors || []).map(e => ({
+                    index: e.index,
+                    errmsg: e.errmsg || e.message
+                }));
 
-            parentPort.postMessage(`Worker ${workerId} batch sent to insert`);
-        });
-    });
+                const serialized = {
+                    name: err.name,
+                    message: err.message,
+                    code: err.code,
+                    writeErrors
+                };
 
+                parentPort.postMessage({ type: "batch_error", workerId, error: serialized });
+
+                // Signal batch done so main thread can continue
+                parentPort.postMessage({ type: "batch_done", workerId, inserted: 0 });
+            });
+    };
+
+    waitForConnection();
+});
