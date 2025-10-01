@@ -1,30 +1,5 @@
 # Sales Management API
 
-A Node.js-based REST API for user authentication and sales record management using MongoDB and Express.js.
-
-
-# Project Structure
-
-models/
-routes/
-controller/
-middleware/
-workers/
-files/
-app.js
-README.md
-
-
-# Tech Stack
-
-Node.js
-Express.js
-MongoDB + Mongoose
-JWT Authentication
-Bcrypt
-Worker Threads for CSV processing
-
-
 # Authentication APIs
 
 1. Register User
@@ -165,7 +140,7 @@ SALT_ROUNDS=10
 # How to Setup Locally
 
 1. Clone the repository:
-https://github.com/Kartik-Dianapps/Csv_Assignment_Multithreading.git
+https://github.com/Kartik-Dianapps/Csv_Assignment_Multithreading
 
 2. Navigate to the project folder:
 cd Csv_Assignment_Multithreading
