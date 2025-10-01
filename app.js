@@ -1,9 +1,9 @@
 const express = require("express")
 const dotenv = require("dotenv").config()
 const app = express();
-const connection = require("./Database/conn.js")
-const userRouter = require("./routes/userRoute.js");
-const fileCheck = require("./cron/fileCheckCron.js");
+const connection = require("./src/database/conn.js")
+const userRouter = require("./src/routes/userRoute.js");
+const fileCheck = require("./src/cron/fileCheckCron.js");
 
 connection();
 

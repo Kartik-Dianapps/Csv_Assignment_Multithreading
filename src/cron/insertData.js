@@ -1,7 +1,7 @@
 const fs = require("fs");
 const csv = require("csv-parser");
-const File = require("../Models/fileModel");
-const Sales = require("../Models/salesModel");
+const File = require("../models/fileModel");
+const Sales = require("../models/salesModel");
 
 async function processCsv(file, batchSize = 2000) {
     console.log("Inside Process CSV");

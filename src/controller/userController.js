@@ -1,10 +1,10 @@
-const User = require("../Models/userModel.js")
+const User = require("../models/userModel.js")
 const bcrypt = require("bcrypt");
 const dotenv = require("dotenv").config();
 const jwt = require("jsonwebtoken");
-const Session = require("../Models/SessionModel.js");
+const Session = require("../models/SessionModel.js");
 const { ObjectId } = require("mongodb");
-const Sales = require("../Models/salesModel.js");
+const Sales = require("../models/salesModel.js");
 
 const registerUser = async (req, res) => {
     try {

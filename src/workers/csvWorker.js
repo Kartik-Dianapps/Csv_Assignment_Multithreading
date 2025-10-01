@@ -1,7 +1,7 @@
 const { parentPort } = require("worker_threads");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv").config();
-const Sales = require("../Models/salesModel");
+const Sales = require("../models/salesModel");
 
 let isConnected = false;
 
@@ -24,26 +24,12 @@ parentPort.on("message", (msg) => {
     const waitForConnection = () => {
         if (!isConnected) return setTimeout(waitForConnection, 50);
 
-        Sales.insertMany(rows,{ordered:true})
+        Sales.insertMany(rows, { ordered: false })
             .then(() => {
                 parentPort.postMessage({ type: "batch_done", workerId, inserted: rows.length });
             })
             .catch(err => {
-                console.error("Worker caught insert error:", err);
-
-                const writeErrors = (err.writeErrors || []).map(e => ({
-                    index: e.index,
-                    errmsg: e.errmsg || e.message
-                }));
-
-                const serialized = {
-                    name: err.name,
-                    message: err.message,
-                    code: err.code,
-                    writeErrors
-                };
-
-                parentPort.postMessage({ type: "batch_error", workerId, error: serialized });
+                console.log("Worker caught insert error:", err.message)
 
                 // Signal batch done so main thread can continue
                 parentPort.postMessage({ type: "batch_done", workerId, inserted: 0 });

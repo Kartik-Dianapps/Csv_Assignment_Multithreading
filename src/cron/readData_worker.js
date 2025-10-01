@@ -4,9 +4,9 @@ const { Worker } = require("worker_threads");
 const { ObjectId } = require("mongodb");
 const os = require("os");
 const path = require("path");
-const File = require("../Models/fileModel");
+const File = require("../models/fileModel");
 
-const THREAD_COUNT = 2;  // Keep small for memory control
+const THREAD_COUNT = 4;  // Keep small for memory control
 const BATCH_SIZE = 2000;  // Smaller batches to prevent RAM spikes
 
 async function processFile(file) {
@@ -23,17 +23,6 @@ async function processFile(file) {
 
             worker.on("message", (msg) => {
                 switch (msg.type) {
-
-                    case "batch_error":
-                        console.error(`Worker ${msg.workerId} insert error: ${msg.error.name} - ${msg.error.message}`);
-                        if (msg.error.writeErrors && msg.error.writeErrors.length) {
-                            msg.error.writeErrors.forEach(we => {
-                                console.error(`  → Duplicate row at index ${we.index}: ${we.errmsg}`);
-                            });
-                        } else if (msg.error.errmsg) {
-                            console.error(`  → MongoDB error: ${msg.error.errmsg}`);
-                        }
-                        break;
 
                     case "batch_done":
                         workerBusy[msg.workerId] = false;
@@ -92,6 +81,7 @@ async function processFile(file) {
                 const batch = rowBuffer.splice(0, BATCH_SIZE);
                 workerQueues[nextWorker].push(batch);
                 sendNextBatch(nextWorker);
+                seenOrderIds.clear()
 
                 nextWorker = (nextWorker + 1) % THREAD_COUNT;
 
@@ -136,6 +126,8 @@ async function processPendingFiles() {
         await File.updateOne({ _id: file._id }, { status: "done" });
 
         await fs.promises.unlink(file.filePath);
+        console.log(`${file.filename} file Deleted after reading`);
+
     }
 }
 

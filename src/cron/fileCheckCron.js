@@ -1,8 +1,8 @@
 const cron = require("node-cron");
 const fs = require("fs");
 const path = require("path");
-const File = require("../Models/fileModel");
-const Sales = require("../Models/salesModel");
+const File = require("../models/fileModel");
+const Sales = require("../models/salesModel");
 const insertData = require("./insertData");
 const processPendingFiles = require("./readData_worker");
 
